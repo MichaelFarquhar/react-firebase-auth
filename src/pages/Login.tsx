@@ -4,8 +4,9 @@ import { TextField, Stack, Typography, Button, Link, Alert } from '@mui/material
 import { useFormik } from 'formik';
 import { LoginSchema } from '../validation/Auth';
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
+import { useNavigate } from 'react-router-dom';
 
 const formatFirebaseError = (error: any): string => {
     switch (error.code) {
@@ -21,7 +22,15 @@ const formatFirebaseError = (error: any): string => {
 };
 
 export const Login: FC = () => {
+    const navigate = useNavigate();
     const [authError, setAuthError] = useState('');
+
+    // If logged in, skip login form and go to profile
+    onAuthStateChanged(auth, (user: any) => {
+        if (user) {
+            navigate('/profile');
+        }
+    });
 
     const formik = useFormik({
         initialValues: {
@@ -33,7 +42,7 @@ export const Login: FC = () => {
             signInWithEmailAndPassword(auth, values.email, values.password)
                 .then((currentUser) => {
                     console.log(currentUser);
-                    setAuthError('');
+                    navigate('/profile');
                 })
                 .catch((err) => setAuthError(formatFirebaseError(err)));
         },
