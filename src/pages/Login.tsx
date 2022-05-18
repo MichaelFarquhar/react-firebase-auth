@@ -1,10 +1,28 @@
-import { FC } from 'react';
-import { TextField, Stack, Typography, Button, Link } from '@mui/material';
+import { FC, useState } from 'react';
+import { TextField, Stack, Typography, Button, Link, Alert } from '@mui/material';
 
 import { useFormik } from 'formik';
 import { LoginSchema } from '../validation/Auth';
 
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase/firebase-config';
+
+const formatFirebaseError = (error: any): string => {
+    switch (error.code) {
+        case 'auth/invalid-email':
+            return 'Please enter a valid email.';
+        case 'auth/wrong-password':
+            return 'The password you entered is incorrect.';
+        case 'auth/user-not-found':
+            return 'No account found for that email.';
+        default:
+            return error.message;
+    }
+};
+
 export const Login: FC = () => {
+    const [authError, setAuthError] = useState('');
+
     const formik = useFormik({
         initialValues: {
             email: '',
@@ -12,7 +30,12 @@ export const Login: FC = () => {
         },
         validationSchema: LoginSchema,
         onSubmit: (values) => {
-            console.log(values);
+            signInWithEmailAndPassword(auth, values.email, values.password)
+                .then((currentUser) => {
+                    console.log(currentUser);
+                    setAuthError('');
+                })
+                .catch((err) => setAuthError(formatFirebaseError(err)));
         },
     });
 
@@ -43,6 +66,7 @@ export const Login: FC = () => {
                     helperText={formik.touched.password && formik.errors.password}
                     fullWidth
                 />
+                {authError && <Alert severity="error">{authError}</Alert>}
                 <Button variant="contained" type="submit">
                     Login
                 </Button>
