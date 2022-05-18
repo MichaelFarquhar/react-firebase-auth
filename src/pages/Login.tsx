@@ -7,7 +7,7 @@ import { LoginSchema } from '../validation/Auth';
 export const Login: FC = () => {
     const formik = useFormik({
         initialValues: {
-            username: '',
+            email: '',
             password: '',
         },
         validationSchema: LoginSchema,
@@ -23,13 +23,13 @@ export const Login: FC = () => {
                     Login
                 </Typography>
                 <TextField
-                    name="username"
-                    label="Username"
+                    name="email"
+                    label="Email"
                     variant="outlined"
                     onChange={formik.handleChange}
-                    value={formik.values.username}
-                    error={formik.touched.username && Boolean(formik.errors.username)}
-                    helperText={formik.touched.username && formik.errors.username}
+                    value={formik.values.email}
+                    error={formik.touched.email && Boolean(formik.errors.email)}
+                    helperText={formik.touched.email && formik.errors.email}
                     fullWidth
                 />
                 <TextField
