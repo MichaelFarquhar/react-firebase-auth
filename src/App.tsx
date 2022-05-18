@@ -1,10 +1,13 @@
+import { Card } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import './App.css';
 
 function App() {
     return (
         <div className="App">
-            <Outlet />
+            <Card sx={{ py: 5, px: 10 }}>
+                <Outlet />
+            </Card>
         </div>
     );
 }
