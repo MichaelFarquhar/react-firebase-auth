@@ -15,8 +15,9 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useFormik } from 'formik';
 import { RegisterSchema } from '../validation/Auth';
 
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../firebase/firebase-config';
+import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { auth, db } from '../firebase/firebase-config';
+import { addDoc, collection } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
 
 const formatFirebaseError = (error: any): string => {
@@ -53,19 +54,33 @@ export const Register: FC = () => {
     const [registerComplete, setRegisterComplete] = useState(false);
     const [authError, setAuthError] = useState('');
 
+    const userCollectionRef = collection(db, 'users');
+
     const formik = useFormik({
         initialValues: {
             email: '',
+            username: '',
             password: '',
             confirmPassword: '',
         },
         validationSchema: RegisterSchema,
         onSubmit: (values) => {
             createUserWithEmailAndPassword(auth, values.email, values.password)
-                .then(() => {
-                    setRegisterComplete(true);
-                    // Firebase automatically logs in after create account and we don't want that:
-                    signOut(auth);
+                .then((userCredential) => {
+                    const userId = userCredential.user.uid;
+
+                    // After creating, we want to update data with username
+                    const addUserInfo = async () => {
+                        await addDoc(userCollectionRef, {
+                            UID: userId,
+                            username: values.username,
+                        });
+                        setRegisterComplete(true);
+                        // Firebase automatically logs in after create account and we don't want that:
+                        signOut(auth);
+                    };
+
+                    addUserInfo();
                 })
                 .catch((err) => setAuthError(formatFirebaseError(err)));
         },
@@ -89,6 +104,18 @@ export const Register: FC = () => {
                             value={formik.values.email}
                             error={formik.touched.email && Boolean(formik.errors.email)}
                             helperText={formik.touched.email && formik.errors.email}
+                            fullWidth
+                        />
+                        <TextField
+                            name="username"
+                            label="Username"
+                            variant="outlined"
+                            onChange={formik.handleChange}
+                            value={formik.values.username}
+                            error={
+                                formik.touched.username && Boolean(formik.errors.username)
+                            }
+                            helperText={formik.touched.username && formik.errors.username}
                             fullWidth
                         />
                         <TextField
