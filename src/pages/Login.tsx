@@ -4,13 +4,20 @@ import { TextField, Stack, Typography, Button, Alert, Box } from '@mui/material'
 import { useFormik } from 'formik';
 import { LoginSchema } from '../validation/Auth';
 
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import {
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    UserCredential,
+} from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { useDispatch } from 'react-redux';
+import { login } from '../store/user/userSlice';
+
 const formatFirebaseError = (error: any): string => {
     switch (error.code) {
-        case 'email-already-in-usel':
+        case 'email-already-in-use':
             return 'Email already in use.';
         default:
             return error.message;
@@ -19,6 +26,7 @@ const formatFirebaseError = (error: any): string => {
 
 export const Login: FC = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [authError, setAuthError] = useState('');
 
     // If logged in, skip login form and go to profile
@@ -41,8 +49,13 @@ export const Login: FC = () => {
         validationSchema: LoginSchema,
         onSubmit: (values) => {
             signInWithEmailAndPassword(auth, values.email, values.password)
-                .then((currentUser) => {
-                    console.log(currentUser);
+                .then((userCredential: UserCredential) => {
+                    const user = userCredential.user;
+                    dispatch(
+                        login({
+                            email: user.email || '',
+                        })
+                    );
                     navigate('/profile');
                 })
                 .catch((err) => setAuthError(formatFirebaseError(err)));

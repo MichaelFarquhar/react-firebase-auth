@@ -5,18 +5,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
 
+// Redux
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/user/userSlice';
+
 interface User {
     email: string;
 }
 
 export const Profile: FC = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [user, setUser] = useState<User>({
         email: '',
     });
 
-    const logout = () => {
+    const logoutUser = () => {
         signOut(auth).then(() => {
+            dispatch(logout());
             navigate('/');
         });
     };
@@ -42,7 +48,7 @@ export const Profile: FC = () => {
                     : 'You are not currently logged in.'}
             </Typography>
             {user.email ? (
-                <Button variant="contained" onClick={() => logout()}>
+                <Button variant="contained" onClick={() => logoutUser()}>
                     Logout
                 </Button>
             ) : (
