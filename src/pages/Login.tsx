@@ -1,21 +1,17 @@
-import { FC, useState } from 'react';
-import { TextField, Stack, Typography, Button, Link, Alert } from '@mui/material';
+import { FC, useState, useEffect } from 'react';
+import { TextField, Stack, Typography, Button, Alert, Box } from '@mui/material';
 
 import { useFormik } from 'formik';
 import { LoginSchema } from '../validation/Auth';
 
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const formatFirebaseError = (error: any): string => {
     switch (error.code) {
-        case 'auth/invalid-email':
-            return 'Please enter a valid email.';
-        case 'auth/wrong-password':
-            return 'The password you entered is incorrect.';
-        case 'auth/user-not-found':
-            return 'No account found for that email.';
+        case 'email-already-in-usel':
+            return 'Email already in use.';
         default:
             return error.message;
     }
@@ -26,10 +22,15 @@ export const Login: FC = () => {
     const [authError, setAuthError] = useState('');
 
     // If logged in, skip login form and go to profile
-    onAuthStateChanged(auth, (user: any) => {
-        if (user) {
-            navigate('/profile');
-        }
+    // Only do this if we are on the '/' path AKA the login screen
+    useEffect(() => {
+        const onAuth = onAuthStateChanged(auth, (user: any) => {
+            if (user) {
+                navigate('/profile');
+            }
+        });
+
+        return onAuth;
     });
 
     const formik = useFormik({
@@ -79,9 +80,9 @@ export const Login: FC = () => {
                 <Button variant="contained" type="submit">
                     Login
                 </Button>
-                <Link href="#" sx={{ textAlign: 'left' }}>
-                    Register
-                </Link>
+                <Box sx={{ textAlign: 'left' }}>
+                    <Link to="/register">Register</Link>
+                </Box>
             </Stack>
         </form>
     );
