@@ -19,19 +19,7 @@ import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, db } from '../firebase/firebase-config';
 import { addDoc, collection } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
-
-const formatFirebaseError = (error: any): string => {
-    switch (error.code) {
-        case 'auth/invalid-email':
-            return 'Please enter a valid email.';
-        case 'auth/wrong-password':
-            return 'The password you entered is incorrect.';
-        case 'auth/user-not-found':
-            return 'No account found for that email.';
-        default:
-            return error.message;
-    }
-};
+import { useFirebaseError } from '../firebase/hooks/useFirebaseError';
 
 const RegisterComplete = () => {
     const navigate = useNavigate();
@@ -52,7 +40,7 @@ export const Register: FC = () => {
     const [passwordIsVisible, setPasswordIsVisible] = useState(false);
     const [confirmPasswordIsVisible, setConfirmPasswordIsVisible] = useState(false);
     const [registerComplete, setRegisterComplete] = useState(false);
-    const [authError, setAuthError] = useState('');
+    const [firebaseError, setFirebaseError] = useFirebaseError('');
 
     const userCollectionRef = collection(db, 'users');
 
@@ -70,7 +58,7 @@ export const Register: FC = () => {
                 .then((userCredential) => {
                     const userId = userCredential.user.uid;
 
-                    // After creating, we want to update data with username
+                    // After creating, we want to add username, name and email to firestore linked with UID
                     const addUserInfo = async () => {
                         await addDoc(userCollectionRef, {
                             UID: userId,
@@ -85,7 +73,7 @@ export const Register: FC = () => {
 
                     addUserInfo();
                 })
-                .catch((err) => setAuthError(formatFirebaseError(err)));
+                .catch((err) => setFirebaseError(err));
         },
     });
 
@@ -197,7 +185,7 @@ export const Register: FC = () => {
                                 ),
                             }}
                         />
-                        {authError && <Alert severity="error">{authError}</Alert>}
+                        {firebaseError && <Alert severity="error">{firebaseError}</Alert>}
                         <Button variant="contained" type="submit">
                             Register
                         </Button>

@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useEffect } from 'react';
 import { TextField, Stack, Typography, Button, Alert, Box } from '@mui/material';
 
 import { useFormik } from 'formik';
@@ -10,27 +10,19 @@ import {
     UserCredential,
 } from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
+import { useFirebaseError } from '../firebase/hooks/useFirebaseError';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useDispatch } from 'react-redux';
 import { login } from '../store/user/userSlice';
 
-const formatFirebaseError = (error: any): string => {
-    switch (error.code) {
-        case 'email-already-in-use':
-            return 'Email already in use.';
-        default:
-            return error.message;
-    }
-};
-
 export const Login: FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [authError, setAuthError] = useState('');
+
+    const [firebaseError, setFirebaseError] = useFirebaseError('');
 
     // If logged in, skip login form and go to profile
-    // Only do this if we are on the '/' path AKA the login screen
     useEffect(() => {
         const onAuth = onAuthStateChanged(auth, (user: any) => {
             if (user) {
@@ -41,6 +33,7 @@ export const Login: FC = () => {
         return onAuth;
     });
 
+    // Setup form
     const formik = useFormik({
         initialValues: {
             email: '',
@@ -58,7 +51,7 @@ export const Login: FC = () => {
                     );
                     navigate('/profile');
                 })
-                .catch((err) => setAuthError(formatFirebaseError(err)));
+                .catch((err) => setFirebaseError(err));
         },
     });
 
@@ -89,7 +82,7 @@ export const Login: FC = () => {
                     helperText={formik.touched.password && formik.errors.password}
                     fullWidth
                 />
-                {authError && <Alert severity="error">{authError}</Alert>}
+                {firebaseError && <Alert severity="error">{firebaseError}</Alert>}
                 <Button variant="contained" type="submit">
                     Login
                 </Button>
