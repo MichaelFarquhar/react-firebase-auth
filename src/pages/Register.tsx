@@ -15,7 +15,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useFormik } from 'formik';
 import { RegisterSchema } from '../validation/Auth';
 
-import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, db } from '../firebase/firebase-config';
 import { addDoc, collection } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
@@ -60,6 +60,7 @@ export const Register: FC = () => {
         initialValues: {
             email: '',
             username: '',
+            name: '',
             password: '',
             confirmPassword: '',
         },
@@ -74,6 +75,8 @@ export const Register: FC = () => {
                         await addDoc(userCollectionRef, {
                             UID: userId,
                             username: values.username,
+                            email: values.email,
+                            name: values.name || '',
                         });
                         setRegisterComplete(true);
                         // Firebase automatically logs in after create account and we don't want that:
@@ -116,6 +119,18 @@ export const Register: FC = () => {
                                 formik.touched.username && Boolean(formik.errors.username)
                             }
                             helperText={formik.touched.username && formik.errors.username}
+                            fullWidth
+                        />
+                        <TextField
+                            name="name"
+                            label="Name"
+                            variant="outlined"
+                            onChange={formik.handleChange}
+                            value={formik.values.name}
+                            error={formik.touched.name && Boolean(formik.errors.name)}
+                            helperText={
+                                formik.touched.name ? formik.errors.name : 'Optional'
+                            }
                             fullWidth
                         />
                         <TextField
