@@ -1,9 +1,11 @@
 import { FC, useEffect } from 'react';
 import { TextField, Stack, Typography, Button, Alert, Box } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useFormik } from 'formik';
 import { LoginSchema } from '../validation/Auth';
 
+// Firebase
 import {
     signInWithEmailAndPassword,
     onAuthStateChanged,
@@ -11,9 +13,9 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '../firebase/firebase-config';
 import { useFirebaseError } from '../firebase/hooks/useFirebaseError';
-import { Link, useNavigate } from 'react-router-dom';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 
+// Redux
 import { useDispatch } from 'react-redux';
 import { login } from '../store/user/userSlice';
 

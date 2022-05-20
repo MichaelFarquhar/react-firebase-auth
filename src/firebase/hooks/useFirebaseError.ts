@@ -1,6 +1,7 @@
 import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
 
+// Will format a firebase error given the error code
 export const useFirebaseError = (initialError: string) => {
     const [firebaseError, setError] = useState(initialError);
 

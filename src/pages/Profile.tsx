@@ -2,6 +2,7 @@ import { FC, useState } from 'react';
 import { Button, Stack, Typography } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 
+// Firebase
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase/firebase-config';
 
