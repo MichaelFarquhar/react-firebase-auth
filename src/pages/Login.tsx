@@ -9,9 +9,10 @@ import {
     onAuthStateChanged,
     UserCredential,
 } from 'firebase/auth';
-import { auth } from '../firebase/firebase-config';
+import { auth, db } from '../firebase/firebase-config';
 import { useFirebaseError } from '../firebase/hooks/useFirebaseError';
 import { Link, useNavigate } from 'react-router-dom';
+import { getDocs, collection, query, where } from 'firebase/firestore';
 
 import { useDispatch } from 'react-redux';
 import { login } from '../store/user/userSlice';
@@ -44,12 +45,37 @@ export const Login: FC = () => {
             signInWithEmailAndPassword(auth, values.email, values.password)
                 .then((userCredential: UserCredential) => {
                     const user = userCredential.user;
-                    dispatch(
-                        login({
-                            email: user.email || '',
-                        })
-                    );
-                    navigate('/profile');
+
+                    const getUserDoc = async () => {
+                        let data = {
+                            username: '',
+                            name: '',
+                        };
+                        const usersRef = collection(db, 'users');
+                        const q = query(
+                            usersRef,
+                            where('UID', '==', 'hUtWcTScFodRkDYuuRnejl9W5Hq2')
+                        );
+
+                        const querySnapshot = await getDocs(q);
+                        // This will only run once
+                        querySnapshot.forEach((doc) => {
+                            data.username = doc.data().username;
+                            data.name = doc.data().name;
+                        });
+
+                        // Dispatch all data into the store
+                        dispatch(
+                            login({
+                                email: user.email || '',
+                                username: data.username,
+                                name: data.name,
+                            })
+                        );
+                        navigate('/profile');
+                    };
+
+                    getUserDoc();
                 })
                 .catch((err) => setFirebaseError(err));
         },
